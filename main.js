@@ -5,36 +5,77 @@ class ParticleSystem extends PIXI.Container {
 		super();
 		// Set start and duration for this effect in milliseconds
 		this.start    = 0;
-		this.duration = 500;
-		// Create a sprite
-		let sp        = game.sprite("CoinsGold000");
-		// Set pivot to center of said sprite
-		sp.pivot.x    = sp.width/2;
-		sp.pivot.y    = sp.height/2;
-		// Add the sprite particle to our particle effect
-		this.addChild(sp);
-		// Save a reference to the sprite particle
-		this.sp = sp;
+		this.duration = 1500; // Duration of the effect in milliseconds
+		this.particles = [];
+		const numParticles = 30; // Number of coin particles
+
+		const centerX = 400; // Center X of the 800x450 canvas
+		const centerY = 225; // Center Y of the 800x450 canvas
+
+		for (let i = 0; i < numParticles; i++) {
+			// Start with the first frame of the coin animation, it will be updated in animTick
+			let sp = game.sprite("CoinsGold000");
+			// Set pivot to center of said sprite
+			sp.pivot.x    = sp.width/2;
+			sp.pivot.y    = sp.height/2;
+
+			// Initial position at the center of the screen
+			sp.x = centerX;
+			sp.y = centerY;
+
+			// Store custom properties for each particle's animation
+			// Trajectory properties (velocities and gravity are in units per normalized time 'nt')
+			sp.vx = (Math.random() - 0.5) * 600; // Horizontal velocity component for spread
+			sp.vy = -(Math.random() * 150 + 50);  // Initial upward velocity component (negative for up)
+			sp.gravityFactor = 500 + Math.random() * 200; // Gravity effect component, positive for down
+
+			// Appearance and rotation properties
+			sp.initialScale = 0.2 + Math.random() * 0.3; // Random base scale (0.2 to 0.5)
+			sp.baseRotation = Math.random() * Math.PI * 2; // Random initial physical rotation
+			sp.rotationSpeed = (Math.random() - 0.5) * Math.PI * 6; // Physical rotation speed (radians per 'nt')
+
+			this.addChild(sp); // Add the sprite particle to this container
+			this.particles.push(sp); // Save a reference to the particle
+		}
 	}
+
 	animTick(nt,lt,gt) {
 		// Every update we get three different time variables: nt, lt and gt.
 		//   nt: Normalized time in procentage (0.0 to 1.0) and is calculated by
 		//       just dividing local time with duration of this effect.
 		//   lt: Local time in milliseconds, from 0 to this.duration.
-		//   gt: Global time in milliseconds,
+		//   gt: Global time in milliseconds.
 
-		// Set a new texture on a sprite particle
-		let num = ("000"+Math.floor(nt*8)).substr(-3);
-		game.setTexture(this.sp,"CoinsGold"+num);
-		// Animate position
-		this.sp.x = 400 + nt*400;
-		this.sp.y = 225 + nt*225;
-		// Animate scale
-		this.sp.scale.x = this.sp.scale.y = nt;
-		// Animate alpha
-		this.sp.alpha = nt;
-		// Animate rotation
-		this.sp.rotation = nt*Math.PI*2;
+		const centerX = 400; // Re-define for clarity or access via this if set in constructor
+		const centerY = 225;
+
+		for (let i = 0; i < this.particles.length; i++) {
+			let sp = this.particles[i];
+
+			// 1. Texture Animation (Spinning Coin Effect)
+			// Uses all 9 coin images (CoinsGold000 to CoinsGold008)
+			const numFramesForSpin = 9;
+			const spinCycles = 3; // How many times the coin texture animates (spins) during its lifetime
+			let currentFrameIndex = Math.floor(nt * numFramesForSpin * spinCycles) % numFramesForSpin;
+			let textureNumStr = ("000" + currentFrameIndex).substr(-3);
+			game.setTexture(sp, "CoinsGold" + textureNumStr);
+
+			// 2. Position Animation (Coin Shower)
+			// Coins start at center, spread out, and fall downwards with gravity.
+			// nt (normalized time) is used as the time variable in kinematic equations.
+			sp.x = centerX + sp.vx * nt;
+			sp.y = centerY + sp.vy * nt + 0.5 * sp.gravityFactor * nt * nt;
+
+			// 3. Scale Animation
+			// Particles quickly scale up to their initialScale.
+			sp.scale.x = sp.scale.y = sp.initialScale * Math.min(1, nt * 5); // Ramps up in first 20% of life
+
+			// 4. Alpha Animation (Fade in, then fade out smoothly over the particle's lifetime)
+			sp.alpha = Math.sin(nt * Math.PI);
+
+			// 5. Physical Rotation Animation (Individual rotation of the sprite itself)
+			sp.rotation = sp.baseRotation + sp.rotationSpeed * nt;
+		}
 	}
 }
 
