@@ -205,7 +205,7 @@ class Game {
   }
   setTexture(sp, name) {
     sp.texture = PIXI.utils.TextureCache[name];
-    if (!sp.texture) console.warn("Texture '" + name + "' don't exist!");
+    if (!sp.texture) console.warn("Texture '" + name + "' doesn't exist!");
   }
 }
 
