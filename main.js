@@ -33,7 +33,7 @@ class ParticleSystem extends PIXI.Container {
 			// Store pre-calculated random animation properties for each particle
 			// These will be used when the particle is alive.
 			sp.config_vx = (Math.random() - 0.5) * 1200; // Horizontal velocity component for spread (doubled)
-			sp.config_vy = -(Math.random() * 300 + 100);  // Initial upward velocity component (negative for up) (doubled)
+			sp.config_vy = -(Math.random() * 300 + 550);  // Initial upward velocity component (negative for up) (doubled)
 			sp.config_gravityFactor = (500 + Math.random() * 200) * 4; // Gravity effect component, positive for down (quadrupled)
 			sp.config_initialScale = 0.2 + Math.random() * 0.3; // Random base scale (0.2 to 0.5)
 			sp.config_baseRotation = Math.random() * Math.PI * 2; // Random initial physical rotation
