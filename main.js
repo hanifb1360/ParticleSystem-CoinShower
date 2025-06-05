@@ -6,7 +6,7 @@ class ParticleSystem extends PIXI.Container {
     // Set start and duration for this effect in milliseconds
     this.start = 0;
     this.spawnDuration = 1500; // Duration over which new particles are spawned
-    this.particleLifespan = 3000; // Lifespan of each individual particle in ms
+    this.particleLifespan = 2500; // Lifespan of each individual particle in ms
     // The total duration of this effect, for the Game class,
     // is when all particles have been spawned and the last one has completed its lifespan.
 
@@ -32,12 +32,12 @@ class ParticleSystem extends PIXI.Container {
 
       // Store pre-calculated random animation properties for each particle
       // These will be used when the particle is alive.
-      sp.config_vx = (Math.random() - 0.5) * 1600; // Horizontal velocity component for spread (increased)
-      sp.config_vy = -(Math.random() * 400 + 600); // Initial upward velocity component (negative for up) (increased)
-      sp.config_gravityFactor = (500 + Math.random() * 200) * 6; // Gravity effect component, positive for down (increased)
-      sp.config_initialScale = 0.2 + Math.random() * 0.3; // Random base scale (0.2 to 0.5)
+      sp.config_vx = (Math.random() - 0.5) * 1600; // Horizontal velocity component for spread
+      sp.config_vy = -(Math.random() * 400 + 600); // Initial upward velocity component (negative for up)
+      sp.config_gravityFactor = (500 + Math.random() * 200) * 6; // Gravity effect component, positive for down
+      sp.config_initialScale = 0.2 + Math.random() * 0.1; // Random base scale
       sp.config_baseRotation = Math.random() * Math.PI * 2; // Random initial physical rotation
-      sp.config_rotationSpeed = (Math.random() - 0.5) * Math.PI * 16; // Physical rotation speed (radians per 'particle_nt') (increased)
+      sp.config_rotationSpeed = (Math.random() - 0.5) * Math.PI * 16; // Physical rotation speed (radians per 'particle_nt')
 
       // Particle state
       sp.isActive = false; // Becomes true when spawned
