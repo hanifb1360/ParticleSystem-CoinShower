@@ -5,10 +5,14 @@ class ParticleSystem extends PIXI.Container {
 		super();
 		// Set start and duration for this effect in milliseconds
 		this.start    = 0;
-		this.duration = 1500; // Duration of the effect in milliseconds
-		this.particles = [];
+		this.duration = 1500; // Duration over which particles are spawned
 		const numParticles = 30; // Number of coin particles
 
+		this.particleLifespan = 1500; // Each particle lives for this duration (in ms)
+		// Calculate interval between particle spawns to spread them over this.duration
+		this.spawnInterval = this.duration / numParticles;
+
+		this.particles = [];
 		const centerX = 400; // Center X of the 800x450 canvas
 		const centerY = 225; // Center Y of the 800x450 canvas
 
@@ -19,20 +23,23 @@ class ParticleSystem extends PIXI.Container {
 			sp.pivot.x    = sp.width/2;
 			sp.pivot.y    = sp.height/2;
 
-			// Initial position at the center of the screen
+			// Store pre-calculated random animation properties for each particle
+			// These will be used when the particle is alive.
+			sp.config_vx = (Math.random() - 0.5) * 600; // Horizontal velocity component for spread
+			sp.config_vy = -(Math.random() * 150 + 50);  // Initial upward velocity component (negative for up)
+			sp.config_gravityFactor = 500 + Math.random() * 200; // Gravity effect component, positive for down
+			sp.config_initialScale = 0.2 + Math.random() * 0.3; // Random base scale (0.2 to 0.5)
+			sp.config_baseRotation = Math.random() * Math.PI * 2; // Random initial physical rotation
+			sp.config_rotationSpeed = (Math.random() - 0.5) * Math.PI * 6; // Physical rotation speed (radians per 'particle_nt')
+
+			// Particle state
+			sp.isActive = false;  // Becomes true when spawned
+			sp.visible = false;   // Start invisible until spawned
+			sp.birthTime = 0;     // Will be set to the effect's local time (lt) when spawned
+
+			// Set initial position (will be re-applied at actual spawn time)
 			sp.x = centerX;
 			sp.y = centerY;
-
-			// Store custom properties for each particle's animation
-			// Trajectory properties (velocities and gravity are in units per normalized time 'nt')
-			sp.vx = (Math.random() - 0.5) * 600; // Horizontal velocity component for spread
-			sp.vy = -(Math.random() * 150 + 50);  // Initial upward velocity component (negative for up)
-			sp.gravityFactor = 500 + Math.random() * 200; // Gravity effect component, positive for down
-
-			// Appearance and rotation properties
-			sp.initialScale = 0.2 + Math.random() * 0.3; // Random base scale (0.2 to 0.5)
-			sp.baseRotation = Math.random() * Math.PI * 2; // Random initial physical rotation
-			sp.rotationSpeed = (Math.random() - 0.5) * Math.PI * 6; // Physical rotation speed (radians per 'nt')
 
 			this.addChild(sp); // Add the sprite particle to this container
 			this.particles.push(sp); // Save a reference to the particle
@@ -41,40 +48,76 @@ class ParticleSystem extends PIXI.Container {
 
 	animTick(nt,lt,gt) {
 		// Every update we get three different time variables: nt, lt and gt.
-		//   nt: Normalized time in procentage (0.0 to 1.0) and is calculated by
-		//       just dividing local time with duration of this effect.
-		//   lt: Local time in milliseconds, from 0 to this.duration.
+		//   nt: Normalized time for the WHOLE EFFECT (0.0 to 1.0), calculated by (lt / this.duration).
+		//   lt: Local time for the WHOLE EFFECT (milliseconds), from 0 to this.duration.
 		//   gt: Global time in milliseconds.
+		// Individual particles will now use their own normalized time 'particle_nt'.
 
-		const centerX = 400; // Re-define for clarity or access via this if set in constructor
+		const centerX = 400; 
 		const centerY = 225;
 
 		for (let i = 0; i < this.particles.length; i++) {
 			let sp = this.particles[i];
+			let scheduledBirthTime = i * this.spawnInterval; // Time when this particle is supposed to spawn
 
-			// 1. Texture Animation (Spinning Coin Effect)
+			// Spawn particle if it's its time and it's not already active
+			if (!sp.isActive && lt >= scheduledBirthTime) {
+				sp.isActive = true;
+				sp.visible = true;
+				sp.birthTime = scheduledBirthTime; // Record its birth time based on the schedule
+
+				// Initialize position at actual spawn
+				sp.x = centerX;
+				sp.y = centerY;
+				// Other properties like alpha, scale, rotation will be set based on its age.
+			}
+
+			if (!sp.isActive) {
+				continue; // Skip if not yet spawned or already died
+			}
+
+			let particleAge = lt - sp.birthTime;
+
+			// If effect time 'lt' has looped, particleAge might become negative.
+			// This can happen if totalDuration of the game is greater than this.duration + this.particleLifespan
+			// and the effect is set to loop. For this assignment, we assume a single play-through or
+			// that particles simply restart if lt loops.
+			
+			if (particleAge > this.particleLifespan) {
+				sp.isActive = false; // Particle has lived its full life
+				sp.visible = false;
+				continue;
+			}
+
+			// Calculate particle's own normalized lifetime (0.0 to 1.0)
+			let particle_nt = particleAge / this.particleLifespan;
+			// Clamp particle_nt to [0, 1] range
+			particle_nt = Math.max(0, Math.min(1, particle_nt));
+
+
+			// 1. Texture Animation (Spinning Coin Effect) based on particle_nt
 			// Uses all 9 coin images (CoinsGold000 to CoinsGold008)
 			const numFramesForSpin = 9;
 			const spinCycles = 3; // How many times the coin texture animates (spins) during its lifetime
-			let currentFrameIndex = Math.floor(nt * numFramesForSpin * spinCycles) % numFramesForSpin;
+			let currentFrameIndex = Math.floor(particle_nt * numFramesForSpin * spinCycles) % numFramesForSpin;
 			let textureNumStr = ("000" + currentFrameIndex).substr(-3);
 			game.setTexture(sp, "CoinsGold" + textureNumStr);
 
-			// 2. Position Animation (Coin Shower)
+			// 2. Position Animation (Coin Shower) based on particle_nt
 			// Coins start at center, spread out, and fall downwards with gravity.
-			// nt (normalized time) is used as the time variable in kinematic equations.
-			sp.x = centerX + sp.vx * nt;
-			sp.y = centerY + sp.vy * nt + 0.5 * sp.gravityFactor * nt * nt;
+			// particle_nt is used as the time variable in kinematic equations.
+			sp.x = centerX + sp.config_vx * particle_nt;
+			sp.y = centerY + sp.config_vy * particle_nt + 0.5 * sp.config_gravityFactor * particle_nt * particle_nt;
 
-			// 3. Scale Animation
+			// 3. Scale Animation based on particle_nt
 			// Particles quickly scale up to their initialScale.
-			sp.scale.x = sp.scale.y = sp.initialScale * Math.min(1, nt * 5); // Ramps up in first 20% of life
+			sp.scale.x = sp.scale.y = sp.config_initialScale * Math.min(1, particle_nt * 5); // Ramps up in first 20% of its life
 
-			// 4. Alpha Animation (Fade in, then fade out smoothly over the particle's lifetime)
-			sp.alpha = Math.sin(nt * Math.PI);
+			// 4. Alpha Animation (Fade in, then fade out smoothly over the particle's lifetime) based on particle_nt
+			sp.alpha = Math.sin(particle_nt * Math.PI);
 
-			// 5. Physical Rotation Animation (Individual rotation of the sprite itself)
-			sp.rotation = sp.baseRotation + sp.rotationSpeed * nt;
+			// 5. Physical Rotation Animation (Individual rotation of the sprite itself) based on particle_nt
+			sp.rotation = sp.config_baseRotation + sp.config_rotationSpeed * particle_nt;
 		}
 	}
 }
