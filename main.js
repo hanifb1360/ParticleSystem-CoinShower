@@ -20,8 +20,8 @@ class ParticleSystem extends PIXI.Container {
 
 
 		this.particles = [];
-		const centerX = 400; // Center X of the 800x450 canvas
-		const centerY = 225; // Center Y of the 800x450 canvas
+		this.centerX = 400; // Center X of the 800x450 canvas
+		this.centerY = 225; // Center Y of the 800x450 canvas
 
 		for (let i = 0; i < numParticles; i++) {
 			// Start with the first frame of the coin animation, it will be updated in animTick
