@@ -32,12 +32,12 @@ class ParticleSystem extends PIXI.Container {
 
 			// Store pre-calculated random animation properties for each particle
 			// These will be used when the particle is alive.
-			sp.config_vx = (Math.random() - 0.5) * 1200; // Horizontal velocity component for spread (doubled)
-			sp.config_vy = -(Math.random() * 300 + 550);  // Initial upward velocity component (negative for up) (doubled)
-			sp.config_gravityFactor = (500 + Math.random() * 200) * 4; // Gravity effect component, positive for down (quadrupled)
+			sp.config_vx = (Math.random() - 0.5) * 1600; // Horizontal velocity component for spread (increased)
+			sp.config_vy = -(Math.random() * 400 + 600);  // Initial upward velocity component (negative for up) (increased)
+			sp.config_gravityFactor = (500 + Math.random() * 200) * 6; // Gravity effect component, positive for down (increased)
 			sp.config_initialScale = 0.2 + Math.random() * 0.3; // Random base scale (0.2 to 0.5)
 			sp.config_baseRotation = Math.random() * Math.PI * 2; // Random initial physical rotation
-			sp.config_rotationSpeed = (Math.random() - 0.5) * Math.PI * 12; // Physical rotation speed (radians per 'particle_nt') (doubled)
+			sp.config_rotationSpeed = (Math.random() - 0.5) * Math.PI * 16; // Physical rotation speed (radians per 'particle_nt') (increased)
 
 			// Particle state
 			sp.isActive = false;  // Becomes true when spawned
@@ -105,7 +105,7 @@ class ParticleSystem extends PIXI.Container {
 			// 1. Texture Animation (Spinning Coin Effect) based on particle_nt
 			// Uses all 9 coin images (CoinsGold000 to CoinsGold008)
 			const numFramesForSpin = 9;
-			const spinCycles = 6; // How many times the coin texture animates (spins) during its lifetime (doubled)
+			const spinCycles = 10; // How many times the coin texture animates (spins) during its lifetime (increased)
 			let currentFrameIndex = Math.floor(particle_nt * numFramesForSpin * spinCycles) % numFramesForSpin;
 			let textureNumStr = ("000" + currentFrameIndex).substr(-3);
 			game.setTexture(sp, "CoinsGold" + textureNumStr);
@@ -118,7 +118,7 @@ class ParticleSystem extends PIXI.Container {
 
 			// 3. Scale Animation based on particle_nt
 			// Particles quickly scale up to their initialScale.
-			sp.scale.x = sp.scale.y = sp.config_initialScale * Math.min(1, particle_nt * 10); // Ramps up in first 10% of its life (factor doubled)
+			sp.scale.x = sp.scale.y = sp.config_initialScale * Math.min(1, particle_nt * 16); // Ramps up in first ~6% of its life (factor increased)
 
 			// 4. Alpha Animation (Fade in, then fade out smoothly over the particle's lifetime) based on particle_nt
 			sp.alpha = Math.sin(particle_nt * Math.PI);
