@@ -9,6 +9,10 @@ class ParticleSystem extends PIXI.Container {
     this.particleLifespan = 3000; // Lifespan of each individual particle in ms
     // The total duration of this effect, for the Game class,
     // is when all particles have been spawned and the last one has completed its lifespan.
+
+	// The duration was updated to represent when all particles have completed 
+	// their lifespans, matching the new effect logic, while still respecting 
+	// the start (0) and end (total duration) points for the effect.
     this.duration = this.spawnDuration + this.particleLifespan;
 
     const numParticles = 30; // Number of coin particles
