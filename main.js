@@ -71,7 +71,7 @@ class ParticleSystem extends PIXI.Container {
 			if (!sp.isActive && lt >= scheduledBirthTime) {
 				sp.isActive = true;
 				sp.visible = true;
-				sp.birthTime = scheduledBirthTime; // Record its birth time based on the schedule
+				sp.birthTime = lt; // Record its birth time based on the actual local time
 
 				// Initialize position at actual spawn
 				sp.x = centerX;
