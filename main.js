@@ -5,8 +5,8 @@ class ParticleSystem extends PIXI.Container {
     super();
     // Set start and duration for this effect in milliseconds
     this.start = 0;
-    this.spawnDuration = 1500; // Duration over which new particles are spawned
-    this.particleLifespan = 2500; // Lifespan of each individual particle in ms
+    this.spawnDuration = 1000; // Duration over which new particles are spawned
+    this.particleLifespan = 2000; // Lifespan of each individual particle in ms
     // The total duration of this effect, for the Game class,
     // is when all particles have been spawned and the last one has completed its lifespan.
 
