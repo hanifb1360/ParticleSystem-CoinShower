@@ -185,7 +185,7 @@ class Game {
   addEffect(eff) {
     this.totalDuration = Math.max(
       this.totalDuration,
-      (eff.duration + eff.start) || 0 // Ensure duration is at least 0
+      (eff.duration + eff.start) || 0
     );
     this.effects.push(eff);
     this.stage.addChild(eff);
