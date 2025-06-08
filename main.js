@@ -1,8 +1,29 @@
 // ----- Start of the assigment ----- //
 
-class ParticleSystem extends PIXI.Container {
+const CANVAS_WIDTH = 800; // Based on Game class renderer
+const CANVAS_HEIGHT = 450; // Based on Game class renderer
+const DEFAULT_CENTER_X = CANVAS_WIDTH / 2;
+const DEFAULT_CENTER_Y = CANVAS_HEIGHT / 2;
+
+const PARTICLE_COUNT = 30;
+const MAX_HORIZONTAL_VELOCITY_SPREAD_FACTOR = 1600;
+const MIN_INITIAL_UPWARD_VELOCITY = 600;
+const RANDOM_INITIAL_UPWARD_VELOCITY_RANGE = 400;
+const BASE_GRAVITY_FACTOR = 500;
+const RANDOM_GRAVITY_FACTOR_RANGE = 200;
+const GRAVITY_MULTIPLIER = 6;
+const BASE_INITIAL_SCALE = 0.2;
+const RANDOM_INITIAL_SCALE_RANGE = 0.1;
+const MAX_ROTATION_SPEED_FACTOR = Math.PI * 16;
+
+const NUM_COIN_FRAMES = 9;
+const COIN_SPIN_CYCLES = 10;
+const SCALE_RAMP_UP_FACTOR = 16;
+
+class ParticleSystem extends PIXI.Container { 
   constructor() {
-    super();
+    super(); 
+
     // Set start and duration for this effect in milliseconds
     this.start = 0;
     this.spawnDuration = 1000; // Duration over which new particles are spawned
@@ -10,20 +31,21 @@ class ParticleSystem extends PIXI.Container {
     // The total duration of this effect, for the Game class,
     // is when all particles have been spawned and the last one has completed its lifespan.
 
-	// The duration was updated to represent when all particles have completed 
-	// their lifespans, matching the new effect logic, while still respecting 
-	// the start (0) and end (total duration) points for the effect.
+    // The duration was updated to represent when all particles have completed
+    // their lifespans, matching the new effect logic, while still respecting
+    // the start (0) and end (total duration) points for the effect.
     this.duration = this.spawnDuration + this.particleLifespan;
 
-    const numParticles = 30; // Number of coin particles
+    // Use defined constants for center, store as class properties
+    this.centerX = DEFAULT_CENTER_X;
+    this.centerY = DEFAULT_CENTER_Y;
+
     // Calculate interval between particle spawns to spread them over spawnDuration
-    this.spawnInterval = this.spawnDuration / numParticles;
+    this.spawnInterval = this.spawnDuration / PARTICLE_COUNT;
 
     this.particles = [];
-    const centerX = 400; // Center X of the 800x450 canvas
-    const centerY = 225; // Center Y of the 800x450 canvas
 
-    for (let i = 0; i < numParticles; i++) {
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
       // Start with the first frame of the coin animation, it will be updated in animTick
       let sp = game.sprite("CoinsGold000");
       // Set pivot to center of said sprite
@@ -32,12 +54,12 @@ class ParticleSystem extends PIXI.Container {
 
       // Store pre-calculated random animation properties for each particle
       // These will be used when the particle is alive.
-      sp.config_vx = (Math.random() - 0.5) * 1600; // Horizontal velocity component for spread
-      sp.config_vy = -(Math.random() * 400 + 600); // Initial upward velocity component (negative for up)
-      sp.config_gravityFactor = (500 + Math.random() * 200) * 6; // Gravity effect component, positive for down
-      sp.config_initialScale = 0.2 + Math.random() * 0.1; // Random base scale
+      sp.config_vx = (Math.random() - 0.5) * MAX_HORIZONTAL_VELOCITY_SPREAD_FACTOR;
+      sp.config_vy = -(Math.random() * RANDOM_INITIAL_UPWARD_VELOCITY_RANGE + MIN_INITIAL_UPWARD_VELOCITY);
+      sp.config_gravityFactor = (BASE_GRAVITY_FACTOR + Math.random() * RANDOM_GRAVITY_FACTOR_RANGE) * GRAVITY_MULTIPLIER;
+      sp.config_initialScale = BASE_INITIAL_SCALE + Math.random() * RANDOM_INITIAL_SCALE_RANGE;
       sp.config_baseRotation = Math.random() * Math.PI * 2; // Random initial physical rotation
-      sp.config_rotationSpeed = (Math.random() - 0.5) * Math.PI * 16; // Physical rotation speed (radians per 'particle_nt')
+      sp.config_rotationSpeed = (Math.random() - 0.5) * MAX_ROTATION_SPEED_FACTOR; // Physical rotation speed (radians per 'particle_nt')
 
       // Particle state
       sp.isActive = false; // Becomes true when spawned
@@ -45,8 +67,8 @@ class ParticleSystem extends PIXI.Container {
       sp.birthTime = 0; // Will be set to the effect's local time (lt) when spawned
 
       // Set initial position (will be re-applied at actual spawn time)
-      sp.x = centerX;
-      sp.y = centerY;
+      sp.x = this.centerX;
+      sp.y = this.centerY;
 
       this.addChild(sp); // Add the sprite particle to this container
       this.particles.push(sp); // Save a reference to the particle
@@ -60,8 +82,7 @@ class ParticleSystem extends PIXI.Container {
     //   gt: Global time in milliseconds.
     // Individual particles will now use their own normalized time 'particle_nt'.
 
-    const centerX = 400;
-    const centerY = 225;
+    // centerX and centerY are now this.centerX and this.centerY
 
     for (let i = 0; i < this.particles.length; i++) {
       let sp = this.particles[i];
@@ -73,9 +94,9 @@ class ParticleSystem extends PIXI.Container {
         sp.visible = true;
         sp.birthTime = scheduledBirthTime; // Record its birth time based on the schedule
 
-        // Initialize position at actual spawn
-        sp.x = centerX;
-        sp.y = centerY;
+        // Initialize position at actual spawn using class properties
+        sp.x = this.centerX;
+        sp.y = this.centerY;
         // Other properties like alpha, scale, rotation will be set based on its age.
       }
 
@@ -102,28 +123,27 @@ class ParticleSystem extends PIXI.Container {
       particle_nt = Math.max(0, Math.min(1, particle_nt));
 
       // 1. Texture Animation (Spinning Coin Effect) based on particle_nt
-      // Uses all 9 coin images (CoinsGold000 to CoinsGold008)
-      const numFramesForSpin = 9;
-      const spinCycles = 10; // How many times the coin texture animates (spins) during its lifetime (increased)
+      // Uses all coin images (CoinsGold000 to CoinsGold008)
       let currentFrameIndex =
-        Math.floor(particle_nt * numFramesForSpin * spinCycles) %
-        numFramesForSpin;
+        Math.floor(particle_nt * NUM_COIN_FRAMES * COIN_SPIN_CYCLES) %
+        NUM_COIN_FRAMES;
       let textureNumStr = ("000" + currentFrameIndex).substr(-3);
       game.setTexture(sp, "CoinsGold" + textureNumStr);
 
       // 2. Position Animation (Coin Shower) based on particle_nt
       // Coins start at center, spread out, and fall downwards with gravity.
       // particle_nt is used as the time variable in kinematic equations.
-      sp.x = centerX + sp.config_vx * particle_nt;
+      // Use class properties for centerX and centerY
+      sp.x = this.centerX + sp.config_vx * particle_nt;
       sp.y =
-        centerY +
+        this.centerY +
         sp.config_vy * particle_nt +
         0.5 * sp.config_gravityFactor * particle_nt * particle_nt;
 
       // 3. Scale Animation based on particle_nt
       // Particles quickly scale up to their initialScale.
       sp.scale.x = sp.scale.y =
-        sp.config_initialScale * Math.min(1, particle_nt * 16); // Ramps up in first ~6% of its life (factor increased)
+        sp.config_initialScale * Math.min(1, particle_nt * SCALE_RAMP_UP_FACTOR); // Ramps up in first ~6% of its life
 
       // 4. Alpha Animation (Fade in, then fade out smoothly over the particle's lifetime) based on particle_nt
       sp.alpha = Math.sin(particle_nt * Math.PI);
