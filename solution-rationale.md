@@ -4,10 +4,13 @@ In my modified version, I implemented a coin shower effect by spawning multiple 
 
 - **Spawn Duration:** Coins are spawned over **1000ms** (`this.spawnDuration = 1000`).
 - **Particle Lifespan:** Each coin lives for **2000ms** (`this.particleLifespan = 2000`).
-- **Total Effect Duration:** The effect lasts **3000ms** (`1000 + 2000`).
+- **Total Effect Duration:** The effect lasts **3000ms** (`this.spawnDuration + this.particleLifespan`).
 
-> This ensures that the last coin spawned has its full lifespan to animate.  
-> If the duration were only 500ms, most coins wouldn’t appear or finish animating.
+> The original effect duration was 500ms. This is suitable for a single, simple animation. However, for a "coin shower" effect where multiple particles are spawned sequentially over a `spawnDuration` (1000ms in this case) and each particle has its own `particleLifespan` (2000ms), a 500ms total duration would be far too short. Most particles would either not spawn at all, or their animation would be abruptly cut off.
+>
+> The new total duration of 3000ms (`spawnDuration + particleLifespan`) is crucial. It ensures that:
+> 1. All particles have a chance to be spawned over the `spawnDuration`.
+> 2. The very last particle spawned still gets its full `particleLifespan` to complete its animation (movement, fading, etc.).
 
 
 ### Role of `lt` (Local Time for the Effect)
