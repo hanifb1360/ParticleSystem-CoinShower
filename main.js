@@ -5,20 +5,20 @@ const CANVAS_HEIGHT = 450; // Based on Game class renderer
 const DEFAULT_CENTER_X = CANVAS_WIDTH / 2;
 const DEFAULT_CENTER_Y = CANVAS_HEIGHT / 2;
 
-const PARTICLE_COUNT = 30;
-const MAX_HORIZONTAL_VELOCITY_SPREAD_FACTOR = 1600;
-const MIN_INITIAL_UPWARD_VELOCITY = 600;
-const RANDOM_INITIAL_UPWARD_VELOCITY_RANGE = 400;
-const BASE_GRAVITY_FACTOR = 500;
-const RANDOM_GRAVITY_FACTOR_RANGE = 200;
-const GRAVITY_MULTIPLIER = 6;
-const BASE_INITIAL_SCALE = 0.2;
-const RANDOM_INITIAL_SCALE_RANGE = 0.1;
-const MAX_ROTATION_SPEED_FACTOR = Math.PI * 16;
+const PARTICLE_COUNT = 50; // Total number of particles to spawn in the effect
+const MAX_HORIZONTAL_VELOCITY_SPREAD_FACTOR = 1600; // Maximum horizontal velocity spread factor for particles
+const MIN_INITIAL_UPWARD_VELOCITY = 600; // Minimum initial upward velocity for particles
+const RANDOM_INITIAL_UPWARD_VELOCITY_RANGE = 400; // Range for random initial upward velocity of particles
+const BASE_GRAVITY_FACTOR = 500; // Base gravity factor to apply to particles
+const RANDOM_GRAVITY_FACTOR_RANGE = 200; // Range for random gravity factor to add variability to the effect
+const GRAVITY_MULTIPLIER = 6; // Gravity multiplier to adjust the effect's gravity strength
+const BASE_INITIAL_SCALE = 0.2; // Base scale for particles
+const RANDOM_INITIAL_SCALE_RANGE = 0.1; // Range for random initial scale of particles
+const MAX_ROTATION_SPEED_FACTOR = Math.PI * 16; // 16 full rotations per particle lifetime
 
-const NUM_COIN_FRAMES = 9;
-const COIN_SPIN_CYCLES = 10;
-const SCALE_RAMP_UP_FACTOR = 16;
+const NUM_COIN_FRAMES = 9; // Number of frames in the coin animation (CoinsGold000 to CoinsGold008)
+const COIN_SPIN_CYCLES = 10; // Number of full spin cycles for the coin animation during its lifetime
+const SCALE_RAMP_UP_FACTOR = 16; // Scale up factor for particles, so they reach full size in ~6% of their lifetime
 
 class ParticleSystem extends PIXI.Container { 
   constructor() {
@@ -43,7 +43,8 @@ class ParticleSystem extends PIXI.Container {
     // Calculate interval between particle spawns to spread them over spawnDuration
     this.spawnInterval = this.spawnDuration / PARTICLE_COUNT;
 
-    this.particles = [];
+
+    this.particles = []; // Array to hold all particle sprites
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       // Start with the first frame of the coin animation, it will be updated in animTick
